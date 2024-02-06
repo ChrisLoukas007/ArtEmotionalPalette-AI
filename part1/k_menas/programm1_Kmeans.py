@@ -17,7 +17,8 @@ def get_primary_color(image_path): # Function to get the primary color of an ima
         image = image.reshape(-1, 3) # Reshape the image to be a list of RGB pixels . Each pixel is a 3-element array containing the RGB values
         
         np.random.seed(0) # This line makes sure that if we run the code multiple times, we get the same result each time.
-        kmeans = KMeans(n_clusters=1, n_init=10) #n_init=10 means the algorithm will be run 10 times with different initial centroids, and the best one in terms of inertia will be chosen.
+        kmeans = KMeans(n_clusters=1, n_init=10) #I set n_clusters=1 because the K-means algorithm will find the average color of the image that is the primary color, 
+        #n_init=10 means the algorithm will be run 10 times with different initial centroids, and the best one in terms of inertia will be chosen.
         kmeans.fit(image) # Fit the K-means model to the image
         
         # Gets the main color that kmeans found . It;s a group of 3 values that represent the RGB color
