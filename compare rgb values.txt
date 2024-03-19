@@ -1,0 +1,20 @@
+image 1 : jupyter 
+	  python
+
+image 2 : jupyter 
+	  python
+
+image 3 : jupyter 
+	  python
+
+image 4 : jupyter 
+	  python
+
+image 5 : jupyter 
+	  python
+
+image 6 : jupyter 
+	  python
+
+image 7 : jupyter 
+	  python
