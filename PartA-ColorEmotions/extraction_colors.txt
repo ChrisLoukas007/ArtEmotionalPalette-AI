@@ -1,0 +1,71 @@
+import numpy as np
+import cv2
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from kneed import KneeLocator
+import matplotlib.pyplot as plt
+from collections import Counter
+
+def RGB2HEX(color):
+    return "#{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
+
+def load_image(image_path):
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
+
+def extract_colors_elbow(image, show_chart=True):
+    # Resize the image to reduce computation and normalize pixel scale
+    image = cv2.resize(image, (600, 400), interpolation=cv2.INTER_AREA)
+    image = image.reshape(image.shape[0]*image.shape[1], 3)
+    
+    # Standardize the RGB values
+    scaler = StandardScaler()
+    standardized_image = scaler.fit_transform(image)
+    
+    # Finding the optimal number of clusters using the elbow method
+    distortions = []
+    K = range(1, 20)
+    for k in K:
+        kmeanModel = KMeans(n_clusters=k, n_init=100)
+        kmeanModel.fit(standardized_image)
+        distortions.append(kmeanModel.inertia_)
+    
+    # Using KneeLocator to find the elbow point automatically
+    kn = KneeLocator(K, distortions, curve='convex', direction='decreasing')
+    optimal_k = kn.knee if kn.knee else 1  # Fallback to 1 if no knee is found
+
+    # Create the model with the optimal number of clusters
+    clf = KMeans(n_clusters=optimal_k, n_init=300)
+    labels = clf.fit_predict(standardized_image)
+    
+    # Count cluster labels
+    counts = Counter(labels)
+    center_colors = clf.cluster_centers_
+    
+    # Convert centers back to original scale
+    center_colors = scaler.inverse_transform(center_colors)
+    ordered_colors = [center_colors[i] for i in counts.keys()]
+    hex_colors = [RGB2HEX(color) for color in ordered_colors]
+
+    if show_chart:
+        plt.figure(figsize=(8, 6))
+        plt.pie(counts.values(), labels=hex_colors, colors=hex_colors)
+        plt.show()
+
+    return ordered_colors, labels, image
+
+def visualize_clusters(image, labels, colors):
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    for label, color in zip(np.unique(labels), colors):
+        ax.scatter(image[labels == label, 0], image[labels == label, 1], image[labels == label, 2], 
+                   color=RGB2HEX(color), label=f"Cluster {label}", s=30)
+    ax.set_title("K-means Clustering on Image")
+    plt.legend()
+    plt.show()
+
+# Load image and extract colors
+image = load_image('path_to_your_image.jpg')
+colors, labels, modified_image = extract_colors_elbow(image)
+visualize_clusters(modified_image, labels, colors)
