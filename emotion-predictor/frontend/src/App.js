@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+<<<<<<< HEAD
 import "./App.css";
 import { Spinner, Card, Button } from "react-bootstrap";
 
@@ -24,10 +25,21 @@ function App() {
     } else {
       setFilePreview(null);
     }
+=======
+
+function App() {
+  const [file, setFile] = useState(null);
+  const [prediction, setPrediction] = useState(null);
+  const [colors, setColors] = useState(null);
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+>>>>>>> b9c875de4 (create app for the AI-pallete)
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+<<<<<<< HEAD
     if (!file) {
       setError("Please select a file");
       return;
@@ -37,6 +49,12 @@ function App() {
     formData.append("file", file);
     setLoading(true);
     setError(null);
+=======
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+>>>>>>> b9c875de4 (create app for the AI-pallete)
 
     try {
       const response = await axios.post(
@@ -48,6 +66,7 @@ function App() {
           },
         }
       );
+<<<<<<< HEAD
       setPredictions(response.data.predicted_emotions);
       setColors(response.data.colors);
       setError(null);
@@ -156,6 +175,36 @@ function App() {
                   </Card.Text>
                 </Card.Body>
               </Card>
+=======
+      setPrediction(response.data.predicted_emotion);
+      setColors(response.data.colors);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Image Emotion Predictor</h1>
+      <form onSubmit={handleSubmit}>
+        <input type="file" onChange={handleFileChange} />
+        <button type="submit">Predict Emotion</button>
+      </form>
+      {prediction && (
+        <div>
+          <h2>Predicted Emotion: {prediction}</h2>
+          <h3>Primary Colors:</h3>
+          <div style={{ display: "flex" }}>
+            {colors.map((color, index) => (
+              <div
+                key={index}
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                }}
+              />
+>>>>>>> b9c875de4 (create app for the AI-pallete)
             ))}
           </div>
         </div>
