@@ -9,6 +9,6 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "3000:80" # Map container's 80 to host's 3000
     depends_on:
       - backend
