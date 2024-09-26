@@ -4,13 +4,9 @@ import numpy as np
 import cv2
 from sklearn.cluster import KMeans
 from tensorflow.keras.models import load_model
-from sklearn.preprocessing import StandardScaler
 import pickle
 import io
 import logging
-import json
-import webcolors
-import math
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -21,89 +17,40 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load the color names JSON file
-try:
-    with open('app/data/colors_name.json') as json_file:
-        color_names = json.load(json_file)
-except FileNotFoundError:
-    logger.error("colors_name.json file not found")
-    color_names = {}
+# Define model directory
+model_dir = 'app/model'
 
 # Load your trained model
 try:
-    model = load_model('app/model/emotion_model.h5')
+    model = load_model(f'{model_dir}/emotion_model.h5')
+    logger.info("Model loaded successfully")
 except FileNotFoundError:
     logger.error("emotion_model.h5 file not found")
     model = None
 
 # Load your scaler
 try:
-    with open('app/model/scaler.pkl', 'rb') as f:
+    with open(f'{model_dir}/scaler.pkl', 'rb') as f:
         scaler = pickle.load(f)
+    logger.info("Scaler loaded successfully")
 except FileNotFoundError:
     logger.error("scaler.pkl file not found")
     scaler = None
 
-# Define the emotion labels
-emotion_labels = [
-    "Pure_Simplicity", "Untamed", "Young", "Fresh", "Ethnic", 
-    "Tranquil", "Elegant", "Alluring", "Youthful", "Quiet", 
-    "Intellectual", "Masculine", "Elaborate", "Casual", "Interesting", 
-    "Mellow", "Subtle", "Natural", "Deep", "Mysterious", 
-    "Calm", "Conservative", "Decorative", "Pastoral", "Sleek", 
-    "Graceful", "Serious", "Soft", "Robust", "Solemn", 
-    "Dignified", "Peaceful", "Modern", "Sophisticated", "Brilliant", 
-    "Wild", "Composed", "Majestic", "Agile", "Enjoyable", 
-    "Open", "Noble", "Progressive", "Dreamy", "Heavy", 
-    "Provincial", "Classic", "Traditional", "Crystalline", "Sturdy", 
-    "Bright", "Chic", "Rich", "Extravagant", "Feminine", 
-    "Pretty", "Tender", "Pleasant", "Dynamic", "Emotional", 
-    "Mature", "Glossy", "Sedate", "Luxurious", "Sweet", 
-    "Diligent", "Lively", "Complex", "Refined", "Tasteful", 
-    "Provocative", "Neat", "Active", "Showy", "Refreshing", 
-    "Merry", "Supple", "Sharp", "Distinguished", "Romantic", 
-    "Sublime", "Gentle", "Cute", "Domestic", "Free", 
-    "Intimate", "Healthy", "Placid", "Amusing", "Flamboyant", 
-    "Lighthearted", "Abundant", "Friendly", "Nostalgic", "Delicate", 
-    "Delicious", "Aromatic", "Stylish", "Tropical", "Vigorous", 
-    "Polished", "Precious", "Cheerful", "Childlike", "Metallic", 
-    "Charming", "Colourful", "Restful", "Earnest", "Rational", 
-    "Fashionable", "Grand", "Plain", "Mild", "Festive", 
-    "Innocent", "Amiable", "Rustic", "Striking", "Generous", 
-    "Formal", "Sunny", "Eminent", "Wholesome", "Cultured", 
-    "Authoritative", "Vivid", "Smooth", "Bold", "Intrepid", 
-    "Dazzling", "Cultivated", "Dry", "Gorgeous", "Citrus", 
-    "Substantial", "Modest", "Clear", "Bitter", "Aristocratic", 
-    "Fascinating", "Dapper", "Fiery", "Intense", "Hot", 
-    "Adult", "Speedy", "Forceful", "Magnificent", "Light", 
-    "Fruitful", "Nimble", "Fleet", "Joyful", "Relaxed", 
-    "Splendid", "Lightl", "Artistic", "Bitterl", "Genteed", 
-    "Happy", "None" 
-]
-
-def closest_colour(requested_colour):
-    min_colors = {}
-    for key, name in color_names.items():
-        r_c, g_c, b_c = webcolors.hex_to_rgb("#"+key)
-        rd = (r_c - requested_colour[0]) ** 2
-        gd = (g_c - requested_colour[1]) ** 2
-        bd = (b_c - requested_colour[2]) ** 2
-        min_colors[math.sqrt(rd + gd + bd)] = name
-    return min_colors[min(min_colors.keys())]
-
-def get_colour_name(requested_hex):
-    try:
-        closest_name = actual_name = color_names[requested_hex.lstrip('#')]
-    except KeyError:
-        closest_name = closest_colour(webcolors.hex_to_rgb(requested_hex))
-        actual_name = None
-    return actual_name, closest_name
+# Load your label encoder
+try:
+    with open(f'{model_dir}/label_encoder.pkl', 'rb') as f:
+        le = pickle.load(f)
+    logger.info("Label encoder loaded successfully")
+except FileNotFoundError:
+    logger.error("label_encoder.pkl file not found")
+    le = None
 
 def extract_colors(image, n_colors=3):
     """Extract dominant colors from an image using KMeans clustering."""
@@ -116,8 +63,8 @@ def extract_colors(image, n_colors=3):
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """Predict the emotion from the uploaded image."""
-    if model is None or scaler is None:
-        raise HTTPException(status_code=500, detail="Model or scaler not loaded")
+    if model is None or scaler is None or le is None:
+        raise HTTPException(status_code=500, detail="Model, scaler, or label encoder not loaded")
 
     try:
         contents = await file.read()
@@ -141,19 +88,21 @@ async def predict(file: UploadFile = File(...)):
         # Make prediction
         prediction = model.predict(model_input)
         predicted_class = np.argmax(prediction)
-        predicted_emotion = emotion_labels[predicted_class]
-
-        # Get color names
-        color_names = [get_colour_name(webcolors.rgb_to_hex(color))[1] for color in colors]
+        
+        # Convert numerical prediction to emotion label
+        predicted_emotion = le.inverse_transform([predicted_class])[0]
     except Exception as e:
         logger.error(f"Error making prediction: {e}")
         raise HTTPException(status_code=500, detail="Error making prediction")
 
     return {
         "predicted_emotion": predicted_emotion,
-        "colors": colors.tolist(),
-        "color_names": color_names
+        "colors": colors.tolist()
     }
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 if __name__ == "__main__":
     import uvicorn
