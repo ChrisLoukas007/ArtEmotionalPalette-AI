@@ -1,15 +1,21 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+import tensorflow as tf
 import numpy as np
 import cv2
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sklearn.cluster import KMeans
 from tensorflow.keras.models import load_model
 import pickle
-import io
 import logging
+import os
+
+# Print versions
+import sklearn
+print(f"TensorFlow version: {tf.__version__}")
+print(f"scikit-learn version: {sklearn.__version__}")
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -23,33 +29,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define model directory
-model_dir = 'app/model'
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_dir = os.path.join(current_dir, 'model')
 
-# Load your trained model
+logger.debug(f"Current working directory: {os.getcwd()}")
+logger.debug(f"Model directory: {model_dir}")
+logger.debug(f"Contents of model directory: {os.listdir(model_dir)}")
+
+# Load model
 try:
-    model = load_model(f'{model_dir}/emotion_model.h5')
+    model = load_model(os.path.join(model_dir, 'emotion_model.h5'))
     logger.info("Model loaded successfully")
-except FileNotFoundError:
-    logger.error("emotion_model.h5 file not found")
+except Exception as e:
+    logger.error(f"Error loading model: {e}")
     model = None
 
-# Load your scaler
+# Load scaler
 try:
-    with open(f'{model_dir}/scaler.pkl', 'rb') as f:
+    with open(os.path.join(model_dir, 'scaler.pkl'), 'rb') as f:
         scaler = pickle.load(f)
     logger.info("Scaler loaded successfully")
-except FileNotFoundError:
-    logger.error("scaler.pkl file not found")
+except Exception as e:
+    logger.error(f"Error loading scaler: {e}")
     scaler = None
 
-# Load your label encoder
+# Load label encoder
 try:
-    with open(f'{model_dir}/label_encoder.pkl', 'rb') as f:
+    with open(os.path.join(model_dir, 'label_encoder.pkl'), 'rb') as f:
         le = pickle.load(f)
     logger.info("Label encoder loaded successfully")
-except FileNotFoundError:
-    logger.error("label_encoder.pkl file not found")
+except Exception as e:
+    logger.error(f"Error loading label encoder: {e}")
     le = None
 
 def extract_colors(image, n_colors=3):
@@ -64,7 +75,7 @@ def extract_colors(image, n_colors=3):
 async def predict(file: UploadFile = File(...)):
     """Predict the emotion from the uploaded image."""
     if model is None or scaler is None or le is None:
-        raise HTTPException(status_code=500, detail="Model, scaler, or label encoder not loaded")
+        raise HTTPException(status_code=500, detail="Model components not loaded")
 
     try:
         contents = await file.read()
@@ -75,25 +86,19 @@ async def predict(file: UploadFile = File(...)):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     except Exception as e:
         logger.error(f"Error processing image: {e}")
-        raise HTTPException(status_code=400, detail="Invalid image file")
+        raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
     try:
-        # Extract colors using k-means
         colors = extract_colors(img)
-        
-        # Prepare input for the model
-        model_input = colors.flatten() / 255.0  # Normalize to [0, 1]
+        model_input = colors.flatten() / 255.0
         model_input = scaler.transform(model_input.reshape(1, -1))
         
-        # Make prediction
         prediction = model.predict(model_input)
         predicted_class = np.argmax(prediction)
-        
-        # Convert numerical prediction to emotion label
         predicted_emotion = le.inverse_transform([predicted_class])[0]
     except Exception as e:
         logger.error(f"Error making prediction: {e}")
-        raise HTTPException(status_code=500, detail="Error making prediction")
+        raise HTTPException(status_code=500, detail=f"Error making prediction: {str(e)}")
 
     return {
         "predicted_emotion": predicted_emotion,
