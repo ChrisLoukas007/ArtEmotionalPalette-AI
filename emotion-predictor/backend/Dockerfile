@@ -2,24 +2,25 @@ FROM python:3.10
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
+    build-essential \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Upgrade pip, setuptools, and wheel
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy and install requirements
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Upgrade pip and install packages one by one
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir fastapi==0.68.0 && \
-    pip install --no-cache-dir uvicorn==0.15.0 && \
-    pip install --no-cache-dir numpy==1.21.0 && \
-    pip install --no-cache-dir opencv-python-headless==4.5.3.56 && \
-    pip install --no-cache-dir scikit-learn==1.5.1 && \
-    pip install --no-cache-dir tensorflow==2.16.0rc0 && \
-    pip install --no-cache-dir python-multipart==0.0.5
-
+# Copy your application code
 COPY ./app ./app
 
+# Expose port and start the application
+EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
