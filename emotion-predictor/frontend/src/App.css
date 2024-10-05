@@ -1,0 +1,73 @@
+/* App.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1,
+h2,
+h3 {
+  color: #333;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input[type="file"] {
+  margin-right: 10px;
+}
+
+button {
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #ddd;
+}
+
+.error {
+  color: red;
+}
+
+.results {
+  margin-top: 20px;
+}
+
+.colors {
+  display: flex;
+  gap: 10px;
+}
+
+.color-box {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #ccc;
+}
+
+.color-info {
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .colors {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .color-box {
+    margin-bottom: 10px;
+  }
+}

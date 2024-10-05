@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -18,11 +19,6 @@ function App() {
       return;
     }
 
-    // Reset state before new prediction
-    setPrediction(null);
-    setColors([]);
-    setError(null);
-
     const formData = new FormData();
     formData.append("file", file);
 
@@ -36,15 +32,12 @@ function App() {
           },
         }
       );
-      console.log("Response data:", response.data);
       setPrediction(response.data.predicted_emotion);
       setColors(response.data.colors);
       setError(null);
     } catch (error) {
       console.error("Error:", error);
       setError("An error occurred while predicting. Please try again.");
-      setPrediction(null);
-      setColors([]);
     }
   };
 
@@ -55,27 +48,22 @@ function App() {
         <input type="file" onChange={handleFileChange} />
         <button type="submit">Predict Emotion</button>
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
       {prediction && (
-        <div>
+        <div className="results">
           <h2>Predicted Emotion: {prediction}</h2>
           <h3>Primary Colors:</h3>
-          <div style={{ display: "flex" }}>
-            {colors && colors.length > 0 ? (
-              colors.map((color, index) => (
+          <div className="colors">
+            {colors.map((color, index) => (
+              <div key={index}>
                 <div
-                  key={index}
+                  className="color-box"
                   style={{
-                    width: "50px",
-                    height: "50px",
                     backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-                    marginRight: "10px",
                   }}
                 />
-              ))
-            ) : (
-              <p>No colors to display.</p>
-            )}
+              </div>
+            ))}
           </div>
         </div>
       )}
