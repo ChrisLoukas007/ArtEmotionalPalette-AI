@@ -4,7 +4,7 @@ import axios from "axios";
 function App() {
   const [file, setFile] = useState(null);
   const [prediction, setPrediction] = useState(null);
-  const [colors, setColors] = useState(null);
+  const [colors, setColors] = useState([]);
   const [error, setError] = useState(null);
 
   const handleFileChange = (event) => {
@@ -17,6 +17,11 @@ function App() {
       setError("Please select a file");
       return;
     }
+
+    // Reset state before new prediction
+    setPrediction(null);
+    setColors([]);
+    setError(null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -31,12 +36,15 @@ function App() {
           },
         }
       );
+      console.log("Response data:", response.data);
       setPrediction(response.data.predicted_emotion);
       setColors(response.data.colors);
       setError(null);
     } catch (error) {
       console.error("Error:", error);
       setError("An error occurred while predicting. Please try again.");
+      setPrediction(null);
+      setColors([]);
     }
   };
 
@@ -53,16 +61,21 @@ function App() {
           <h2>Predicted Emotion: {prediction}</h2>
           <h3>Primary Colors:</h3>
           <div style={{ display: "flex" }}>
-            {colors.map((color, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-                }}
-              />
-            ))}
+            {colors && colors.length > 0 ? (
+              colors.map((color, index) => (
+                <div
+                  key={index}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                    marginRight: "10px",
+                  }}
+                />
+              ))
+            ) : (
+              <p>No colors to display.</p>
+            )}
           </div>
         </div>
       )}

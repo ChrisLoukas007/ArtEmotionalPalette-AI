@@ -4,7 +4,6 @@ import cv2
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sklearn.cluster import KMeans
-from tensorflow.keras.models import load_model
 import pickle
 import logging
 import os
@@ -39,7 +38,8 @@ logger.debug(f"Contents of model directory: {os.listdir(model_dir)}")
 
 # Load model
 try:
-    model = load_model(os.path.join(model_dir, 'emotion_model.h5'))
+    model_path = os.path.join(model_dir, 'emotion_model.h5')
+    model = tf.keras.models.load_model(model_path)
     logger.info("Model loaded successfully")
 except Exception as e:
     logger.error(f"Error loading model: {e}")
@@ -92,7 +92,7 @@ async def predict(file: UploadFile = File(...)):
         colors = extract_colors(img)
         model_input = colors.flatten() / 255.0
         model_input = scaler.transform(model_input.reshape(1, -1))
-        
+
         prediction = model.predict(model_input)
         predicted_class = np.argmax(prediction)
         predicted_emotion = le.inverse_transform([predicted_class])[0]
