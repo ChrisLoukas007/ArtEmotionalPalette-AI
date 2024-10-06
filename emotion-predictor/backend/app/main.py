@@ -108,10 +108,23 @@ async def predict(file: UploadFile = File(...)):
     try:
         # Extract colors and predict emotion
         colors = extract_colors(img)
-        model_input = colors.flatten() / 255.0
-        model_input = scaler.transform(model_input.reshape(1, -1))
+        logger.debug(f"Extracted colors: {colors}")
 
+        # Normalize and flatten the colors
+        model_input = colors.flatten() / 255.0
+        logger.debug(f"Model input BEFORE scaling: {model_input}")
+
+        # Scale the input
+        model_input = scaler.transform(model_input.reshape(1, -1))
+        logger.debug(f"Model input AFTER scaling: {model_input}")
+        logger.debug(f"Scaler mean: {scaler.mean_}")
+        logger.debug(f"Scaler scale: {scaler.scale_}")
+
+        # Predict the emotion
         prediction = model.predict(model_input)
+        logger.debug(f"Raw model prediction: {prediction}")
+
+        # Get top 2 emotions
         top_indices = prediction.argsort()[0][::-1][:2]
         top_emotions = le.inverse_transform(top_indices)
         top_probabilities = prediction[0][top_indices]
