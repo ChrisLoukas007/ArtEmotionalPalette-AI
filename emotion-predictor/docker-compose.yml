@@ -6,9 +6,11 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
+
+  # Comment out or remove the frontend service during local development
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - backend

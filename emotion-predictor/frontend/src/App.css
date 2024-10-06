@@ -71,3 +71,18 @@ button:hover {
     margin-bottom: 10px;
   }
 }
+
+.image-preview {
+  margin-bottom: 20px;
+}
+
+.preview-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+}
+
+.color-info {
+  font-size: 14px;
+  text-align: center;
+}

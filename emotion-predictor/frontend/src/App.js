@@ -4,12 +4,24 @@ import "./App.css";
 
 function App() {
   const [file, setFile] = useState(null);
-  const [prediction, setPrediction] = useState(null);
+  const [predictions, setPredictions] = useState([]);
   const [colors, setColors] = useState([]);
   const [error, setError] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
 
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
+    const selectedFile = event.target.files[0];
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setFilePreview(null);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -32,12 +44,13 @@ function App() {
           },
         }
       );
-      setPrediction(response.data.predicted_emotion);
+      setPredictions(response.data.predicted_emotions);
       setColors(response.data.colors);
       setError(null);
     } catch (error) {
       console.error("Error:", error);
       setError("An error occurred while predicting. Please try again.");
+      setPredictions([]);
     }
   };
 
@@ -48,10 +61,23 @@ function App() {
         <input type="file" onChange={handleFileChange} />
         <button type="submit">Predict Emotion</button>
       </form>
+      {filePreview && (
+        <div className="image-preview">
+          <p>Image Preview:</p>
+          <img src={filePreview} alt="Preview" className="preview-image" />
+        </div>
+      )}
       {error && <p className="error">{error}</p>}
-      {prediction && (
+      {predictions.length > 0 && (
         <div className="results">
-          <h2>Predicted Emotion: {prediction}</h2>
+          <h2>Predicted Emotions:</h2>
+          <ul>
+            {predictions.map((item, index) => (
+              <li key={index}>
+                {item.emotion} ({(item.probability * 100).toFixed(2)}%)
+              </li>
+            ))}
+          </ul>
           <h3>Primary Colors:</h3>
           <div className="colors">
             {colors.map((color, index) => (
@@ -59,9 +85,13 @@ function App() {
                 <div
                   className="color-box"
                   style={{
-                    backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                    backgroundColor: `rgb(${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]})`,
                   }}
                 />
+                <p className="color-info">
+                  RGB: ({color.rgb[0]}, {color.rgb[1]}, {color.rgb[2]})<br />
+                  Name: {color.name}
+                </p>
               </div>
             ))}
           </div>

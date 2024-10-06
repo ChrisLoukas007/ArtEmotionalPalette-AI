@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 import pickle
 import logging
 import os
+import webcolors
 
 # Print versions
 import sklearn
@@ -71,6 +72,22 @@ def extract_colors(image, n_colors=3):
     colors = kmeans.cluster_centers_
     return colors.astype(int)
 
+def get_color_name(rgb_color):
+    """Convert RGB to the closest color name."""
+    try:
+        # Try to get the exact color name
+        return webcolors.rgb_to_name(rgb_color)
+    except ValueError:
+        # If the color is not found, find the closest match
+        min_colors = {}
+        for hex_value, name in webcolors.CSS3_HEX_TO_NAMES.items():
+            r_c, g_c, b_c = webcolors.hex_to_rgb(hex_value)
+            rd = (r_c - rgb_color[0]) ** 2
+            gd = (g_c - rgb_color[1]) ** 2
+            bd = (b_c - rgb_color[2]) ** 2
+            min_colors[(rd + gd + bd)] = name
+        return min_colors[min(min_colors.keys())]
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """Predict the emotion from the uploaded image."""
@@ -89,20 +106,28 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
     try:
+        # Extract colors and predict emotion
         colors = extract_colors(img)
         model_input = colors.flatten() / 255.0
         model_input = scaler.transform(model_input.reshape(1, -1))
 
         prediction = model.predict(model_input)
-        predicted_class = np.argmax(prediction)
-        predicted_emotion = le.inverse_transform([predicted_class])[0]
+        top_indices = prediction.argsort()[0][::-1][:2]
+        top_emotions = le.inverse_transform(top_indices)
+        top_probabilities = prediction[0][top_indices]
+
+        # Get color names
+        color_names = [get_color_name(color) for color in colors]
     except Exception as e:
         logger.error(f"Error making prediction: {e}")
         raise HTTPException(status_code=500, detail=f"Error making prediction: {str(e)}")
 
     return {
-        "predicted_emotion": predicted_emotion,
-        "colors": colors.tolist()
+        "predicted_emotions": [
+            {"emotion": top_emotions[0], "probability": float(top_probabilities[0])},
+            {"emotion": top_emotions[1], "probability": float(top_probabilities[1])},
+        ],
+        "colors": [{"rgb": color.tolist(), "name": name} for color, name in zip(colors, color_names)],
     }
 
 @app.get("/")
