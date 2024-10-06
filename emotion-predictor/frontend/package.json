@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "axios": "^0.27.2",
+    "bootstrap": "^5.3.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "5.0.1",
-    "axios": "^0.27.2",
-    "@babel/core": "^7.22.5",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
