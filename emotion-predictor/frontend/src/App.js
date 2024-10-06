@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
-import { Spinner } from "react-bootstrap"; // Import Bootstrap Spinner
+import { Spinner, Card, Button } from "react-bootstrap";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -9,7 +9,7 @@ function App() {
   const [colors, setColors] = useState([]);
   const [error, setError] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [loading, setLoading] = useState(false); // New loading state
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -35,7 +35,7 @@ function App() {
 
     const formData = new FormData();
     formData.append("file", file);
-    setLoading(true); // Show spinner when the request starts
+    setLoading(true);
     setError(null);
 
     try {
@@ -59,7 +59,7 @@ function App() {
       }
       setPredictions([]);
     } finally {
-      setLoading(false); // Hide spinner when the request finishes
+      setLoading(false);
     }
   };
 
@@ -75,7 +75,7 @@ function App() {
     <div className="App container mt-5">
       <h1 className="text-center mb-4">Image Emotion Predictor</h1>
 
-      <form onSubmit={handleSubmit} className="text-center">
+      <form onSubmit={handleSubmit} className="text-center mb-4">
         <div className="mb-3">
           <input
             type="file"
@@ -84,16 +84,12 @@ function App() {
           />
         </div>
         <div>
-          <button type="submit" className="btn btn-primary me-2">
+          <Button type="submit" variant="primary" className="me-2">
             Predict Emotion
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={handleReset}
-          >
+          </Button>
+          <Button variant="secondary" onClick={handleReset}>
             Reset
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -103,8 +99,13 @@ function App() {
           <img
             src={filePreview}
             alt="Preview"
-            className="img-fluid preview-image"
-            style={{ maxWidth: "300px", height: "auto" }}
+            className="img-fluid preview-image rounded"
+            style={{
+              maxWidth: "400px",
+              height: "auto",
+              border: "1px solid #ddd",
+              padding: "10px",
+            }}
           />
         </div>
       )}
@@ -120,35 +121,41 @@ function App() {
       {error && <p className="text-danger mt-3 text-center">{error}</p>}
 
       {predictions.length > 0 && (
-        <div className="results mt-4 text-center">
+        <div className="results mt-5">
           <h2 className="text-center">Predicted Emotions</h2>
-          <ul className="list-group mb-3 text-center">
+          <ul className="list-group mb-4">
             {predictions.map((item, index) => (
-              <li key={index} className="list-group-item">
-                {item.emotion} ({(item.probability * 100).toFixed(2)}%)
+              <li
+                key={index}
+                className="list-group-item text-center"
+                style={{ padding: "10px" }}
+              >
+                <strong>{item.emotion}</strong> (
+                {(item.probability * 100).toFixed(2)}%)
               </li>
             ))}
           </ul>
+
           <h3 className="text-center">Primary Colors</h3>
           <div className="colors d-flex justify-content-center flex-wrap mt-3">
             {colors.map((color, index) => (
-              <div key={index} className="color-box mx-2">
+              <Card key={index} className="m-2" style={{ width: "10rem" }}>
                 <div
                   className="color-box"
                   style={{
-                    width: "50px",
-                    height: "50px",
+                    width: "100%",
+                    height: "100px",
                     backgroundColor: `rgb(${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]})`,
-                    border: "1px solid #ccc",
                   }}
                 ></div>
-                <p className="text-center mt-2">
-                  <strong>RGB:</strong> ({color.rgb[0]}, {color.rgb[1]},{" "}
-                  {color.rgb[2]})
-                  <br />
-                  <strong>{color.name}</strong>
-                </p>
-              </div>
+                <Card.Body className="text-center">
+                  <Card.Text>
+                    <strong>Color Name</strong> {color.name} <br />{" "}
+                    <strong>RGB</strong> ({color.rgb[0]}, {color.rgb[1]},
+                    {color.rgb[2]})
+                  </Card.Text>
+                </Card.Body>
+              </Card>
             ))}
           </div>
         </div>
