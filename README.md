@@ -80,3 +80,7 @@ Results
 
 Contribution
 We welcome contributions from the community. Feel free to fork the repository, raise issues, and submit pull requests.
+
+## Large Files Not Included
+
+The large model files have been removed from the Git history due to GitHub's file size limits. If you need these files, please contact me or download them from <external link>.
