@@ -5,17 +5,6 @@
 __pycache__/
 *.pyc
 
-# Node.js cache directories
-node_modules/
-emotion-predictor/frontend/node_modules/.cache/
-
-# Machine Learning models (excluding the large model)
-PartA-model/auto-sklearn/
-
-# Other cache and temporary files
-*.eslintcache
-*.pack
-*.json
 
 # Ignore the large model file
 emotion-predictor/backend/app/model/
