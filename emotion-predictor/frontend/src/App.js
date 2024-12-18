@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-<<<<<<< HEAD
 import "./App.css";
-import { Spinner, Card, Button } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -11,6 +10,7 @@ function App() {
   const [error, setError] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [modelType, setModelType] = useState("mlp"); // New state for model type
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -25,21 +25,14 @@ function App() {
     } else {
       setFilePreview(null);
     }
-=======
+  };
 
-function App() {
-  const [file, setFile] = useState(null);
-  const [prediction, setPrediction] = useState(null);
-  const [colors, setColors] = useState(null);
-
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
->>>>>>> b9c875de4 (create app for the AI-pallete)
+  const handleModelChange = (event) => {
+    setModelType(event.target.value);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-<<<<<<< HEAD
     if (!file) {
       setError("Please select a file");
       return;
@@ -49,16 +42,10 @@ function App() {
     formData.append("file", file);
     setLoading(true);
     setError(null);
-=======
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
->>>>>>> b9c875de4 (create app for the AI-pallete)
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/predict",
+        `http://localhost:8000/predict?model_type=${modelType}`,
         formData,
         {
           headers: {
@@ -66,10 +53,8 @@ function App() {
           },
         }
       );
-<<<<<<< HEAD
       setPredictions(response.data.predicted_emotions);
       setColors(response.data.colors);
-      setError(null);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.detail) {
         setError(`Error: ${error.response.data.detail}`);
@@ -77,6 +62,7 @@ function App() {
         setError("An error occurred while predicting. Please try again.");
       }
       setPredictions([]);
+      setColors([]);
     } finally {
       setLoading(false);
     }
@@ -94,7 +80,7 @@ function App() {
     <div className="App container mt-5">
       <h1 className="text-center mb-4">Image Emotion Predictor</h1>
 
-      <form onSubmit={handleSubmit} className="text-center mb-4">
+      <form onSubmit={handleSubmit} className="text-center">
         <div className="mb-3">
           <input
             type="file"
@@ -102,13 +88,28 @@ function App() {
             onChange={handleFileChange}
           />
         </div>
+        <div className="mb-3">
+          <select
+            className="form-select"
+            value={modelType}
+            onChange={handleModelChange}
+          >
+            <option value="mlp">MLP Model</option>
+            <option value="svm">SVM Model</option>
+            <option value="random_forest">Random Forest Model</option>
+          </select>
+        </div>
         <div>
-          <Button type="submit" variant="primary" className="me-2">
+          <button type="submit" className="btn btn-primary me-2">
             Predict Emotion
-          </Button>
-          <Button variant="secondary" onClick={handleReset}>
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleReset}
+          >
             Reset
-          </Button>
+          </button>
         </div>
       </form>
 
@@ -118,13 +119,8 @@ function App() {
           <img
             src={filePreview}
             alt="Preview"
-            className="img-fluid preview-image rounded"
-            style={{
-              maxWidth: "400px",
-              height: "auto",
-              border: "1px solid #ddd",
-              padding: "10px",
-            }}
+            className="img-fluid preview-image"
+            style={{ maxWidth: "300px", height: "auto" }}
           />
         </div>
       )}
@@ -140,71 +136,31 @@ function App() {
       {error && <p className="text-danger mt-3 text-center">{error}</p>}
 
       {predictions.length > 0 && (
-        <div className="results mt-5">
-          <h2 className="text-center">Predicted Emotions</h2>
-          <ul className="list-group mb-4">
+        <div className="results mt-4 text-center">
+          <h2>Predicted Emotions</h2>
+          <ul className="list-group mb-3 text-center">
             {predictions.map((item, index) => (
-              <li
-                key={index}
-                className="list-group-item text-center"
-                style={{ padding: "10px" }}
-              >
-                <strong>{item.emotion}</strong> (
-                {(item.probability * 100).toFixed(2)}%)
+              <li key={index} className="list-group-item">
+                {item.emotion} ({(item.probability * 100).toFixed(2)}%)
               </li>
             ))}
           </ul>
-
-          <h3 className="text-center">Primary Colors</h3>
+          <h3>Primary Colors</h3>
           <div className="colors d-flex justify-content-center flex-wrap mt-3">
             {colors.map((color, index) => (
-              <Card key={index} className="m-2" style={{ width: "10rem" }}>
+              <div key={index} className="color-card text-center mx-2 my-3">
                 <div
                   className="color-box"
                   style={{
-                    width: "100%",
-                    height: "100px",
                     backgroundColor: `rgb(${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]})`,
                   }}
                 ></div>
-                <Card.Body className="text-center">
-                  <Card.Text>
-                    <strong>Color Name</strong> {color.name} <br />{" "}
-                    <strong>RGB</strong> ({color.rgb[0]}, {color.rgb[1]},
-                    {color.rgb[2]})
-                  </Card.Text>
-                </Card.Body>
-              </Card>
-=======
-      setPrediction(response.data.predicted_emotion);
-      setColors(response.data.colors);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  return (
-    <div className="App">
-      <h1>Image Emotion Predictor</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Predict Emotion</button>
-      </form>
-      {prediction && (
-        <div>
-          <h2>Predicted Emotion: {prediction}</h2>
-          <h3>Primary Colors:</h3>
-          <div style={{ display: "flex" }}>
-            {colors.map((color, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-                }}
-              />
->>>>>>> b9c875de4 (create app for the AI-pallete)
+                <div className="color-info mt-2">
+                  <strong>RGB:</strong> ({color.rgb[0]}, {color.rgb[1]},{" "}
+                  {color.rgb[2]})<br />
+                  <strong>{color.name}</strong>
+                </div>
+              </div>
             ))}
           </div>
         </div>
