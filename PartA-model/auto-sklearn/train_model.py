@@ -113,29 +113,3 @@ plt.legend(loc="lower right", fontsize=10)
 plt.grid(True, linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.show()
-
-# 10. Save the final pipeline (model) and preprocessing steps
-model_dir = '../emotion-predictor/backend/app/model'
-os.makedirs(model_dir, exist_ok=True)
-
-# Save the automl model
-model_path = os.path.join(model_dir, 'emotion_model_autosklearn.pkl')
-with open(model_path, 'wb') as f:
-    pickle.dump(automl, f)
-print(f"Auto-sklearn model saved successfully to {model_path}")
-
-# Save the scaler
-scaler_path = os.path.join(model_dir, 'mlp_scaler.pkl')
-with open(scaler_path, 'wb') as f:
-    pickle.dump(scaler, f)
-print(f"Scaler saved successfully to {scaler_path}")
-
-# Save the label encoder
-le_path = os.path.join(model_dir, 'label_encoder.pkl')
-with open(le_path, 'wb') as f:
-    pickle.dump(le, f)
-print(f"Label Encoder saved successfully to {le_path}")
-
-# Print the leaderboard of models considered by auto-sklearn
-print("\nAuto-sklearn Leaderboard:")
-print(automl.leaderboard())

@@ -12,16 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip
 
 # Install Python dependencies
-RUN pip install --no-cache-dir numpy==1.23.5 \
-    scipy==1.9.1 \
-    scikit-learn==0.24.2 \
-    matplotlib \
-    seaborn \
-    auto-sklearn==0.14.7 \
-    pandas==1.3.5
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Create a writable directory
 RUN mkdir -p /app/tmp
-
 WORKDIR /app
 CMD ["bash"]
