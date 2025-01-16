@@ -38,7 +38,7 @@ app.add_middleware(
 SUPPORTED_MODELS = {"mlp", "svm", "random_forest"}
 MODEL_FILES = {
     "mlp": "emotion_model.h5",
-    "svm": "svm_model.pkl",
+    "svm": "svm_model_calibrated.pkl",
     "random_forest": "random_forest_model.pkl"
 }
 
@@ -131,9 +131,9 @@ class PredictionService:
                 "MLP Scaler"
             )
 
-            # Load sklearn models (SVM already includes scaler in pipeline)
+            # Load the calibrated SVM model
             self.models["svm"] = ModelLoader.load_pickle_model(
-                os.path.join(model_dir, MODEL_FILES["svm"]),
+                os.path.join(model_dir, "svm_model_calibrated.pkl"),  # using the calibrated SVM model
                 "SVM"
             )
 
@@ -143,9 +143,9 @@ class PredictionService:
                 "Random Forest"
             )
 
-            # Load label encoder (common for all models)
+            # Load common label encoder for all models
             self.label_encoder = ModelLoader.load_pickle_model(
-                os.path.join(model_dir, 'label_encoder.pkl'),
+                os.path.join(model_dir, 'label_encoder_calibrated.pkl'),  # or 'label_encoder.pkl' if they are identical
                 "Label Encoder"
             )
 
@@ -226,7 +226,7 @@ async def predict(
         )
 
     try:
-        # Read and process image
+        # Read and process the uploaded image
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -234,6 +234,19 @@ async def predict(
             raise ValueError("Failed to decode image")
         
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Pre-check for distinct colors
+        unique_colors = np.unique(img.reshape(-1, 3), axis=0)  # Find unique RGB values
+        if len(unique_colors) < 3:
+            detected_colors = [
+                {"rgb": color.tolist(), "name": ImageProcessor.get_color_name(color)}
+                for color in unique_colors
+            ]
+            return {
+                "error": "Insufficient colors",
+                "message": f"The image contains only {len(unique_colors)} distinct color(s). Please upload an image with at least 3 distinct colors.",
+                "detected_colors": detected_colors,
+            }
         
         # Extract colors and prepare input
         colors = ImageProcessor.extract_colors(img)

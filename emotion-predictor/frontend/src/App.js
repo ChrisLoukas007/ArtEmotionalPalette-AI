@@ -8,9 +8,10 @@ function App() {
   const [predictions, setPredictions] = useState([]);
   const [colors, setColors] = useState([]);
   const [error, setError] = useState(null);
+  const [detectedColors, setDetectedColors] = useState([]);
   const [filePreview, setFilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [modelType, setModelType] = useState("mlp"); // New state for model type
+  const [modelType, setModelType] = useState("mlp");
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -42,6 +43,7 @@ function App() {
     formData.append("file", file);
     setLoading(true);
     setError(null);
+    setDetectedColors([]);
 
     try {
       const response = await axios.post(
@@ -53,14 +55,16 @@ function App() {
           },
         }
       );
-      setPredictions(response.data.predicted_emotions);
-      setColors(response.data.colors);
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.detail) {
-        setError(`Error: ${error.response.data.detail}`);
+
+      if (response.data.error) {
+        setError(response.data.message);
+        setDetectedColors(response.data.detected_colors || []);
       } else {
-        setError("An error occurred while predicting. Please try again.");
+        setPredictions(response.data.predicted_emotions);
+        setColors(response.data.colors);
       }
+    } catch (error) {
+      setError("An error occurred while predicting. Please try again.");
       setPredictions([]);
       setColors([]);
     } finally {
@@ -73,6 +77,7 @@ function App() {
     setPredictions([]);
     setColors([]);
     setError(null);
+    setDetectedColors([]);
     setFilePreview(null);
   };
 
@@ -120,7 +125,7 @@ function App() {
             src={filePreview}
             alt="Preview"
             className="img-fluid preview-image"
-            style={{ maxWidth: "300px", height: "auto" }}
+            style={{ maxWidth: "300px", height: "auto", borderRadius: "8px" }}
           />
         </div>
       )}
@@ -133,7 +138,29 @@ function App() {
         </div>
       )}
 
-      {error && <p className="text-danger mt-3 text-center">{error}</p>}
+      {error && (
+        <div className="text-danger mt-3 text-center">
+          <p className="error-message">{error}</p>
+          {detectedColors.length > 0 && (
+            <div className="detected-colors-container">
+              <h3>Detected Colors:</h3>
+              <div className="colors-grid">
+                {detectedColors.map((color, index) => (
+                  <div key={index} className="color-card">
+                    <div
+                      className="color-box"
+                      style={{
+                        backgroundColor: `rgb(${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]})`,
+                      }}
+                    ></div>
+                    <p className="color-name">{color.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {predictions.length > 0 && (
         <div className="results mt-4 text-center">
