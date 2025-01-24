@@ -18,7 +18,7 @@ import autosklearn.classification
 np.random.seed(42)
 
 # 2. Load and preprocess data
-data = pd.read_csv('final_dataset.csv')  # Ensure final_dataset.csv is in the same directory or update path
+data = pd.read_csv('final_dataset.csv')  # Ensure final_dataset.csv is in the same directory or update the path
 
 # Separate features and labels
 X = data.iloc[:, :-1].values
@@ -45,12 +45,12 @@ X_test = scaler.transform(X_test)
 automl = autosklearn.classification.AutoSklearnClassifier(
     time_left_for_this_task=3600,   # Total time in seconds for optimization
     per_run_time_limit=300,         # Time limit for each model training
-    tmp_folder="/app/tmp",          # Docker-mounted folder for temp data
+    tmp_folder="/app/tmp",          # Temporary directory for intermediate files
 )
 
 print("Fitting auto-sklearn classifier...")
 automl.fit(X_train, y_train)
-print("Done.")
+print("Done fitting the classifier.")
 
 # 7. Create a results folder to save the best model and metrics
 results_dir = "results"
@@ -64,19 +64,23 @@ print(f"Best model saved to {model_path}")
 
 # 9. Extract and print best model name and hyperparameters
 model_description = automl.show_models()
-best_model_name = list(model_description.keys())[0]  # first model is usually the best
-best_model_config = model_description[best_model_name]
+if isinstance(model_description, dict) and len(model_description) > 0:
+    best_model_name = list(model_description.keys())[0]  # first model is usually the best
+    best_model_config = model_description[best_model_name]
+    print(f"\nBest Model: {best_model_name}")
+    print(f"Model Configuration: {best_model_config}")
 
-print(f"\nBest Model: {best_model_name}")
-print(f"Model Configuration: {best_model_config}")
+    # Save the best model description (JSON) to a text file
+    description_path = os.path.join(results_dir, "best_model_description.txt")
+    with open(description_path, "w") as f:
+        f.write(json.dumps(model_description, indent=4))
+    print("Best model description (with hyperparameters) saved to", description_path)
+else:
+    print("No models were found by auto-sklearn.")
+    best_model_name = "No model"
+    best_model_config = {}
 
-# 10. Save the best model description (JSON) to a text file
-description_path = os.path.join(results_dir, "best_model_description.txt")
-with open(description_path, "w") as f:
-    f.write(json.dumps(model_description, indent=4))
-print("Best model description (with hyperparameters) saved to", description_path)
-
-# 11. Evaluate the best model
+# 10. Evaluate the best model
 y_pred = automl.predict(X_test)
 
 test_accuracy = accuracy_score(y_test, y_pred)
@@ -89,11 +93,18 @@ print(f"Test F1-score: {test_f1:.4f}")
 print(f"Test Precision: {test_precision:.4f}")
 print(f"Test Recall: {test_recall:.4f}")
 
-# 12. Classification report
+# 11. Classification report
 print("\nClassification Report:")
-print(classification_report(y_test, y_pred, target_names=le.classes_))
+classification_rep = classification_report(y_test, y_pred, target_names=le.classes_)
+print(classification_rep)
 
-# 13. Confusion Matrix
+# Save classification report to file
+classification_report_path = os.path.join(results_dir, "classification_report.txt")
+with open(classification_report_path, "w") as f:
+    f.write(classification_rep)
+print("Classification report saved to", classification_report_path)
+
+# 12. Confusion Matrix
 cm = confusion_matrix(y_test, y_pred)
 plt.figure(figsize=(12, 10))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
@@ -110,7 +121,7 @@ plt.savefig(cm_plot_path, dpi=300)
 print("Confusion matrix plot saved to", cm_plot_path)
 plt.show()
 
-# 14. ROC Curve
+# 13. ROC Curve
 y_bin = label_binarize(y_test, classes=np.unique(y_test))
 n_classes = y_bin.shape[1]
 y_score = automl.predict_proba(X_test)
