@@ -14,6 +14,22 @@ from sklearn.preprocessing import label_binarize
 
 import autosklearn.classification
 
+# Write a Custom Serialization Function which converts NumPy int/float to regular Python int/float
+def custom_encoder(obj):
+    """
+    Custom JSON serializer.
+    - Converts NumPy int/float to regular Python int/float
+    - Converts unknown objects to string
+    """
+    import numpy as np
+    if isinstance(obj, (np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (np.float64, np.float32)):
+        return float(obj)
+    # Convert any other object to string
+    return str(obj)
+
+
 # 1. Set random seed for reproducibility
 np.random.seed(42)
 
@@ -73,7 +89,7 @@ if isinstance(model_description, dict) and len(model_description) > 0:
     # Save the best model description (JSON) to a text file
     description_path = os.path.join(results_dir, "best_model_description.txt")
     with open(description_path, "w") as f:
-        f.write(json.dumps(model_description, indent=4))
+        f.write(json.dumps(model_description, indent=4, default=custom_encoder))
     print("Best model description (with hyperparameters) saved to", description_path)
 else:
     print("No models were found by auto-sklearn.")
