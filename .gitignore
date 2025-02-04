@@ -12,3 +12,6 @@ emotion-predictor/frontend/node_modules/.cache/babel-loader/228cc41f4751797169d1
 emotion-predictor/frontend/node_modules/.cache/babel-loader/feef094112902d0627434450ea24c0f2c450afd7e3c714676626de27ef41cd10.json
 PartA-model/auto-sklearn/results/*.pkl
 PartA-model/auto-sklearn/results/best_model.pkl
+PartA-model/final_dataset_smotetomek.csv
+PartA-model/MLP-classifier2.ipynb
+PartA-model/x6perfect_cleaned_remove.csv
