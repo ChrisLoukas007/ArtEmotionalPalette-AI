@@ -1,86 +1,98 @@
-ArtEmotionalPalette-AI
+# **ArtEmotionalPalette-AI** 🎨🧠
 
-Overview
+### **Master Thesis - University of Patras, CEID**
 
-ArtEmotionalPalette-AI is an innovative project designed to analyze the emotional dimensions of artworks based on their dominant colors. This system bridges art and technology by employing machine learning algorithms to predict emotional responses evoked by paintings. Our research is grounded in Kobayashi's (1991) framework, which associates specific color combinations with words describing emotions.
+📌 **Author:** [Your Name]  
+📌 **Supervisor:** Prof. **Ioannis Vasilopoulos**
 
-Thesis Objectives
+## **Overview**
 
-The primary objective of this project was to develop a system capable of:
+**ArtEmotionalPalette-AI** is a research-driven machine learning system designed to **predict the emotional content of paintings based on their dominant colors**. This project is part of my **Master Thesis** at the **University of Patras, Computer Engineering & Informatics Department (CEID)**.
 
-- Extracting dominant colors from paintings using advanced techniques.
-- Predicting emotions based on color combinations through machine learning classifiers.
-- Providing a web-based application for users to analyze the emotional content of paintings.
+By combining **color theory, psychology, and AI**, this system analyzes the **relationship between colors and emotions** using machine learning techniques. Our approach is based on **Kobayashi's (1991) research**, which links **three-color combinations** to specific **emotional labels**.
 
-Methodology
+## **Project Goals & Objectives**
 
-1. Dataset Development
+This research aims to **bridge art and technology** by developing a system capable of:
+✔️ **Extracting dominant colors** from paintings using advanced clustering techniques.  
+✔️ **Predicting emotions** based on color combinations via machine learning models.  
+✔️ **Providing an interactive web application** for users to analyze the emotional dimensions of paintings.
 
-- Source: Kobayashi's research (1991).
-- Composition:
-  - 161 words describing positive emotions.
+## **Methodology**
+
+### 1️⃣ **Dataset Development**
+
+- **Source:** Based on **Kobayashi’s research (1991)**.
+- **Composition:**
+  - 161 words describing **positive emotions**.
   - 130 distinct colors.
-  - 1,040 unique combinations of three colors paired with an emotion.
-- Augmentation: The dataset was expanded to ~17,200 samples using permutation and SMOTE Tomek techniques to handle class imbalance.
+  - 1,040 unique **three-color combinations** mapped to emotions.
+- **Augmentation:**
+  - Expanded to **~17,200 samples** using **SMOTETomek oversampling** to balance classes.
 
-2. Dominant Color Extraction
+### 2️⃣ **Dominant Color Extraction**
 
-- Evaluated methods: Color Histogram, Image Quantification, and Deep Learning.
-- Selected method: K-means clustering, chosen for its effectiveness in identifying dominant colors.
+✔️ Evaluated **multiple methods**: Color Histogram, Image Quantification, Deep Learning.  
+✔️ **Selected Method**: **K-Means Clustering** (best accuracy in identifying dominant colors).
 
-3. Classifier Development
+### 3️⃣ **Machine Learning Models for Emotion Prediction**
 
-- Evaluated algorithms: Support Vector Machines (SVM), Multilayer Perceptron (MLP), and Random Forest.
-- Optimization techniques:
-  - Hyperparameter tuning using Grid Search and Randomized Search.
-  - Stratified K-Fold cross-validation to avoid overfitting.
-- Results:
-  - MLP: Best performance with 95.44% test accuracy.
-  - SVM: Close second with 94.48% test accuracy.
-  - Random Forest: Achieved 87.82% test accuracy.
+We trained three **multi-class classification models**:  
+🔹 **Support Vector Machines (SVM)**  
+🔹 **Multilayer Perceptron (MLP)**  
+🔹 **Random Forest Classifier**
 
-4. Web Application Development
+✔️ **Optimization Techniques Applied:**
 
-- Emotion Predictor: A user-friendly web application that allows users to upload images, extract their dominant colors, and predict corresponding emotions using the trained models.
+- **Grid Search & Randomized Search** for hyperparameter tuning.
+- **Stratified K-Fold Cross-Validation** to prevent overfitting.
 
-Folder Descriptions
+✔️ **Final Model Results:**  
+| Model | Test Accuracy |
+|--------|-------------|
+| **MLP** | **95.44%** ✅ _(Best Performance)_ |
+| **SVM** | **94.48%** |
+| **Random Forest** | **87.82%** |
 
-- ColorExtraction: Contains the code and data for extracting dominant colors from images.
-- ModelTraining: Includes scripts and data for training, testing, and optimizing machine learning models.
-- Application: The web-based Emotion Predictor application.
-- Images: Sample images used for testing the application.
-- Miscellaneous: Additional scripts and files for data processing and exploration.
+### 4️⃣ **Web Application Development**
 
-Usage Instructions
-Prerequisites
+We developed a **user-friendly web application** that allows users to:
 
-- Install Python and the required libraries listed in requirements.txt.
+- Upload images 🎨
+- Extract dominant colors 🎭
+- Predict emotions based on **trained AI models** 🤖
 
-Running the Project
+---
 
-1. Extract Colors:
+## **🗂 Folder Structure & Contents**
 
-- Navigate to the ColorExtraction/code/ directory.
-- Run the Jupyter notebooks to extract dominant colors.
+| Folder                                          | Description                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------- |
+| **`Color-Extraction`**                          | Code & data for extracting dominant colors from images.             |
+| **`Model-Training`** _(Previously PartA-model)_ | Scripts & data for **training, testing, and optimizing** ML models. |
+| **`emotion-predictor`**                         | The web-based Emotion Predictor application.                        |
+| **`images_jpg`**                                | Sample images used for testing the application.                     |
+| **`datasets`**                                  | Contains the processed datasets used in model training.             |
+| **`experiments`**                               | Contains exploratory experiments and research evaluations.          |
 
-2. Train Models:
+---
 
-- Navigate to the ModelTraining/code/ directory.
-- Train models using the provided notebooks.
+## **🚀 How to Run the Project**
 
-3. Run the Application:
+### **1️⃣ Extract Colors**
 
-- Navigate to the Application/ directory.
-- Run docker-compose up to start the web application.
+1. Navigate to the **`Color-Extraction/`** directory.
+2. Run the **Jupyter notebooks** to extract dominant colors from images.
 
-Results
+### **2️⃣ Train Models**
 
-- The MLP model achieved the highest accuracy (95.44%) in emotion prediction.
-- The Emotion Predictor application provides a seamless way to analyze the emotional dimensions of paintings.
+1. Navigate to the **`Model-Training/`** directory.
+2. Run the **MLP, SVM, or Random Forest notebooks** to train the models.
 
-Contribution
-We welcome contributions from the community. Feel free to fork the repository, raise issues, and submit pull requests.
+### **3️⃣ Run the Web Application**
 
-## Large Files Not Included
-
-The large model files have been removed from the Git history due to GitHub's file size limits. If you need these files, please contact me or download them from <external link>.
+1. Navigate to the **`emotion-predictor/`** directory.
+2. Run the command:
+   ```bash
+   docker-compose up
+   ```
