@@ -1,0 +1,7 @@
+## Abstract
+
+This thesis examines how **machine learning** can be leveraged to **predict the emotional content of paintings** from their **three representative colors**. While color theory serves as an initial framework—rooted in Kobayashi’s research linking specific color combinations to distinct emotional words—the core emphasis of this work is on building **academically robust classification models**. These models were trained and evaluated on a carefully curated and augmented dataset, ensuring **balanced class distributions** via oversampling techniques (e.g., SMOTETomek).
+
+The study employed **SVM**, **MLP**, and **Random Forest** algorithms, validating their performance through **Stratified K-Fold Cross-Validation** and hyperparameter tuning (Grid Search & Randomized Search). Results indicate that the MLP model outperformed the others in terms of Accuracy, Recall, and F1-score, demonstrating the viability of advanced machine learning methods for **multi-class emotion prediction** based on color data.
+
+Finally, a **web application** was developed to showcase how these models can be applied to real-world images: users can upload any painting, have its **representative colors** extracted, and then receive an **emotion prediction** based on the trained models. In doing so, this project underscores the potential of **artificial intelligence** to interpret and quantify emotional attributes in the realm of art, offering a novel **bridge between creative expression and computational analysis**.
