@@ -3,7 +3,7 @@
 ### Master Thesis – University of Patras, CEID
 
 📌 **Author:** Christos Loukas Ntais  
-📌 **Supervisor:** Prof. Ioannis Vasilopoulos
+📌 **Supervisor:** Ioannis Vasilopoulos
 
 ---
 
